@@ -56,6 +56,7 @@ enum packet_types{
     DISCONNECT  = 14,
 };
 
+// different levels of quality assurance describing how many packets are published with EXACTLY_ONCE being the most reliable and desirable for MQTT
 enum qos_level { AT_MOST_ONCE , AT_LEAST_ONCE , EXACTLY_ONCE };
 
 union mqtt_header {
@@ -86,6 +87,44 @@ struct mqqt_connect {
     };
 
     struct {
-        unsigned short keepalive
-    }
-}
+        unsigned short keepalive;
+        unsigned char *client_id;
+        unsigned char *username;
+        unsigned char *password;
+        unsigned char *will_topic;
+        unsigned char *will_message;
+    } payload;
+
+};
+struct mqqt_connack {
+    union mqqt_header header;
+    unsigned short pkt_id;
+    union{
+        unsigned char byte;
+        struct {
+            unsigned flags : 7;
+            unsigned session_present:1;
+        } connection_flags;
+    };
+
+    unsigned char rc;
+    
+};
+struct mqqt_subscribe {
+    union mqqt_header header;
+    unsigned short pkt_id;
+    unsigned short tuples_len;
+    struct {
+        unsigned short topic_len;
+        unsigned char *topic;
+        unsigned qos;
+    } *tuples;
+};
+
+
+
+
+
+
+
+
