@@ -56,7 +56,7 @@ enum packet_types{
     DISCONNECT  = 14,
 };
 
-// different levels of quality assurance describing how many packets are published with EXACTLY_ONCE being the most reliable and desirable for MQTT
+// different levels of quality assurance describing how many packets are published with EXACTLY_ONCE being the most reliable and desirable for MQQT
 enum qos_level { AT_MOST_ONCE , AT_LEAST_ONCE , EXACTLY_ONCE };
 
 union mqtt_header {
@@ -96,6 +96,7 @@ struct mqqt_connect {
     } payload;
 
 };
+
 struct mqqt_connack {
     union mqqt_header header;
     unsigned short pkt_id;
@@ -121,10 +122,82 @@ struct mqqt_subscribe {
     } *tuples;
 };
 
+struct mqqt_unsubscribe {
+    union mqqt_header header;
+    unsigned short pkt_id;
+    unsigned short tuples_len;
+    struct {
+        unsigned short topic_len;
+        unsigned char *topic;
+    } *tuples_len;
+};
+
+struct mqqt_suback
+{
+    union mqqt_header header;
+    unsigned short pkt_id;
+    unsigned short topic_len;
+    unsigned char *topic;
+    unsigned char payloadlen;
+    unsigned char *payload;
+};
+
+// generic template for a group of packets that simply acknowledge or respond without a payload or other information
+struct mqqt_ack
+{
+    union mqqt_header header;
+    unsigned short pkt_id;
+};
+
+
+//these packets 
+typedef struct mqtt_ack mqtt_puback;
+typedef struct mqtt_ack mqtt_pubrec;
+typedef struct mqtt_ack mqtt_pubrel;
+typedef struct mqtt_ack mqtt_pubcomp;
+typedef struct mqtt_ack mqtt_unsuback;
+
+typedef union mqtt_header mqtt_pingreq;
+typedef union mqtt_header mqtt_pingresp;
+typedef union mqtt_header mqtt_disconnect;
 
 
 
+union mqtt_packet {
+    struct mqtt_ack ack;
+    union mqtt_header header;
+    struct mqtt_connect connect;
+    struct mqtt_connack connack;
+    struct mqtt_suback suback;
+    struct mqtt_publish publish;
+    struct mqtt_subscribe subscribe;
+    struct mqtt_unsubscribe unsubscribe;
+};
+
+//two methods for encoding and decoding (will support serialization)
+int mqqt_encode_length(unsigned char *, size_t);
+unsigned long long mqqt_decode_length(const unsigned char **);
+
+//two methods for serializing and or marshalling data 
+int unpack_mqqt_packet(const unsigned char *, union mqqt_packet *);
+unsigned char *pack_mqqt_packet(const union mqqt_packet *, unsigned);
 
 
+//basically "constructors" to build packets 
+union mqtt_header *mqtt_packet_header(unsigned char);
+struct mqtt_ack *mqtt_packet_ack(unsigned char , unsigned short);
+struct mqtt_connack *mqtt_packet_connack(unsigned char ,
+                                         unsigned char ,
+                                         unsigned char);
+struct mqtt_suback *mqtt_packet_suback(unsigned char, unsigned short,
+                                       unsigned char *, unsigned short);
+struct mqtt_publish *mqtt_packet_publish(unsigned char, unsigned short, size_t,
+                                         unsigned char *,
+                                         size_t, unsigned char *);
 
+//releases heap allocated packets
+void mqtt_packet_release(union mqtt_packet *, unsigned);
+
+
+#endif
 
