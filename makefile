@@ -1,2 +1,2 @@
-tcp:tcp.c
-	gcc -o tcp tcp.c
+mqqt:mqqt.c
+	gcc -o mqqt mqqt.c
