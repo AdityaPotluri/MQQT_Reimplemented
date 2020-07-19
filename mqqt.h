@@ -56,7 +56,7 @@ enum packet_type {
     DISCONNECT  = 14
 };
 
-
+//qos is quality of 
 enum qos_level { AT_MOST_ONCE, AT_LEAST_ONCE, EXACTLY_ONCE };
 
 
