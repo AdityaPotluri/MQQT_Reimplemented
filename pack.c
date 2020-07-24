@@ -45,7 +45,8 @@ void pack_u16(uint8_t **buf, uint16_t val) {
 }
 
 void pack_u32(uint8_t **buf, uint32_t val) {
-    **buf = val;
+    uint32_t htonlval = htonl(val);
+    memcpy(*buf, &htonlval, sizeof(uint32_t));
     (*buf) += sizeof(uint8_t);
 }
 
